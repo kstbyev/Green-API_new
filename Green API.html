@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GREEN-API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        input, button, textarea { width: 100%; margin: 10px 0; padding: 10px; }
+        button { cursor: pointer; }
+        textarea { resize: none; height: 100px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GREEN-API Test</h1>
+        <label for="idInstance">ID Instance</label>
+        <input type="text" id="idInstance" placeholder="Введите ID Instance">
+        <label for="apiTokenInstance">API Token Instance</label>
+        <input type="text" id="apiTokenInstance" placeholder="Введите API Token Instance">
+
+        <button id="getSettings">Get Settings</button>
+        <button id="getStateInstance">Get State Instance</button>
+        <button id="sendMessage">Send Message</button>
+        <button id="sendFileByUrl">Send File by URL</button>
+
+        <label for="response">Response</label>
+        <textarea id="response" readonly></textarea>
+    </div>
+
+    <script>
+        async function callApi(endpoint, method = 'GET', data = null) {
+            const idInstance = document.getElementById('idInstance').value;
+            const apiTokenInstance = document.getElementById('apiTokenInstance').value;
+
+            const url = `https://api.green-api.com/${idInstance}/${endpoint}/${apiTokenInstance}`;
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+            if (data) {
+                options.body = JSON
+                .stringify(data);
+            }
+
+            try {
+                const response = await fetch(url, options);
+                const result = await response.json();
+                document.getElementById('response').value = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('response').value = `Error: ${error.message}`;
+            }
+        }
+
+        document.getElementById('getSettings').addEventListener('click', () => {
+            callApi('getSettings');
+        });
+
+        document.getElementById('getStateInstance').addEventListener('click', () => {
+            callApi('getStateInstance');
+        });
+
+        document.getElementById('sendMessage').addEventListener('click', () => {
+            const phoneNumber = prompt("Enter the phone number:");
+            const message = prompt("Enter the message:");
+            if (phoneNumber && message) {
+                callApi('sendMessage', 'POST', {
+                    chatId: `${phoneNumber}@c.us`,
+                    message
+                });
+            }
+        });
+
+        document.getElementById('sendFileByUrl').addEventListener('click', () => {
+            const phoneNumber = prompt("Enter the phone number:");
+            const fileUrl = prompt("Enter the file URL:");
+            if (phoneNumber && fileUrl) {
+                callApi('sendFileByUrl', 'POST', {
+                    chatId: `${phoneNumber}@c.us`,
+                    urlFile: fileUrl,
+                    fileName: 'file'
+                });
+            }
+        });
+    </script>
+</body>
+</html>
